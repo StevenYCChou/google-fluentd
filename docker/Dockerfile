@@ -16,6 +16,10 @@ RUN apt-get update \
     # If any additional gems need to be installed, it should happen before the
     # image cleanup.
     # ==> INSTALL_ADDITIONAL_GEMS_HERE_IF_NEEDED <==
+    && /opt/google-fluentd/embedded/bin/gem uninstall -ax --force \
+        fluentd fluent-plugin-google-cloud \
+    && /opt/google-fluentd/embedded/bin/gem install \
+        fluentd fluent-plugin-google-cloud:0.7.0.pre.3 \
     # Clean up to reduce image size.
     && apt-get purge -y \
         curl \
