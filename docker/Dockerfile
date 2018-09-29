@@ -17,9 +17,33 @@ RUN apt-get update \
     # image cleanup.
     # ==> INSTALL_ADDITIONAL_GEMS_HERE_IF_NEEDED <==
     && /opt/google-fluentd/embedded/bin/gem uninstall -ax --force \
-        fluentd fluent-plugin-google-cloud \
+        fluentd \
+        fluent-plugin-google-cloud \
+        cool.io \
+        google-api-client \
+        google-cloud-core \
+        google-cloud-env \
+        google-cloud-logging \
+        google-protobuf \
+        googleauth \
+        parallel \
+        rubyzip \
+        signet \
+        stackdriver-core \
     && /opt/google-fluentd/embedded/bin/gem install \
-        fluentd fluent-plugin-google-cloud:0.7.0.pre.3 \
+        fluentd \
+        fluent-plugin-google-cloud:0.7.0.pre.1 \
+        cool.io:1.4.4 \
+        google-api-client:0.23.4 \
+        google-cloud-core:1.2.2 \
+        google-cloud-env:1.0.2 \
+        google-cloud-logging:1.5.1 \
+        google-protobuf:3.5.1 \
+        googleauth:0.6.4 \
+        parallel:1.12.1 \
+        rubyzip:1.2.1 \
+        signet:0.8.1 \
+        stackdriver-core:1.3.0 \
     # Clean up to reduce image size.
     && apt-get purge -y \
         curl \
