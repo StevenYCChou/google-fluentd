@@ -17,6 +17,12 @@ RUN apt-get update \
     # image cleanup.
     # ==> INSTALL_ADDITIONAL_GEMS_HERE_IF_NEEDED <==
     && /opt/google-fluentd/embedded/bin/gem uninstall -ax --force \
+        aws-sdk \
+        aws-sdk-core \
+        aws-sdk-resources \
+        mime-types-data \
+        mime-types \
+        public_suffix \
         cool.io \
         google-api-client \
         google-cloud-core \
@@ -30,97 +36,103 @@ RUN apt-get update \
         stackdriver-core \
         fluentd \
         fluent-plugin-google-cloud \
-    && /opt/google-fluentd/embedded/bin/gem install \
+    && /opt/google-fluentd/embedded/bin/gem install --no-ri --no-rdoc \
+        aws-sdk-resources:2.11.105 \
+        aws-sdk-core:2.11.105 \
+        aws-sdk:2.11.105 \
+        mime-types-data:3.2016.0521 \
+        mime-types:3.1 \
+        public_suffix:3.0.2 \
+        signet:0.8.1 \
         cool.io:1.4.4 \
-        google-api-client:0.23.4 \
-        google-cloud-core:1.2.2 \
-        google-cloud-env:1.0.2 \
-        google-cloud-logging:1.5.1 \
-        google-protobuf:3.5.1 \
         googleauth:0.6.4 \
+        google-api-client:0.23.4 \
+        google-cloud-env:1.0.2 \
+        google-cloud-core:1.2.2 \
+        stackdriver-core:1.3.0 \
+        google-protobuf:3.5.1 \
+        google-cloud-logging:1.5.1 \
         parallel:1.12.1 \
         rubyzip:1.2.1 \
-        signet:0.8.1 \
-        stackdriver-core:1.3.0 \
         fluentd \
         fluent-plugin-google-cloud:0.7.0.pre.3 \
     # Clean up to reduce image size.
-    && apt-get purge -y \
-        curl \
-        lsb-release \
-        build-essential \
-        gtk2.0 \
-        libkrb5-3 \
-    && apt-get autoremove -y --purge \
-    # Remove docs.
-    && rm -rf \
-        /usr/share/doc \
-        /usr/share/man \
-        /opt/google-fluentd/embedded/lib/ruby/gems/*/doc \
-        /opt/google-fluentd/embedded/share/doc \
-        /opt/google-fluentd/embedded/share/gtk-doc \
-        /opt/google-fluentd/embedded/share/man \
-        /opt/google-fluentd/embedded/share/terminfo \
-    # Remove unused gems.
-    && /opt/google-fluentd/embedded/bin/gem uninstall -ax --force \
-        # Gems for ingesting logs to Treasure Data Cloud.
-        td \
-        td-client \
-        td-logger \
-        fluent-plugin-td \
-        fluent-plugin-td-monitoring \
-        hirb \
-        parallel \
-        ohai \
-        mixlib-cli \
-        mixlib-config \
-        mixlib-log \
-        mixlib-shellout \
-        systemu \
-        # Gems for Mongo.
-        fluent-plugin-mongo \
-        mongo \
-    # Remove unused gem versions.
-    && /opt/google-fluentd/embedded/bin/gem uninstall httpclient -v 2.7.2 \
-    && rm -rf \
-        # Cache.
-        /var/cache \
-        # apt.
-        /usr/bin/apt-* \
-        /var/lib/apt/lists/* \
-        # dpkg.
-        /usr/bin/dpkg* \
-        /var/lib/dpkg \
-        # Temp files.
-        /tmp/* \
-        # LDAP.
-        /usr/lib/x86_64-linux-gnu/libldap* \
-        # IBM mainframe / EBCDIC specific encodings.
-        /usr/lib/x86_64-linux-gnu/gconv/IBM* \
-        /usr/lib/x86_64-linux-gnu/gconv/EBCDIC* \
-        # ecpg.
-        /opt/google-fluentd/embedded/bin/ecpg \
-        # OpenSSL.
-        /opt/google-fluentd/embedded/bin/openssl \
-        /usr/bin/openssl \
-        # Postgres.
-        /opt/google-fluentd/embedded/bin/pg_* \
-        /opt/google-fluentd/embedded/bin/postgre* \
-        /opt/google-fluentd/embedded/share/postgre* \
-        /opt/google-fluentd/embedded/lib/postgre* \
-        /opt/google-fluentd/embedded/bin/psql \
-        # libtool.
-        /opt/google-fluentd/embedded/share/libtool \
-        /opt/google-fluentd/embedded/bin/libtool \
-        # .a files and include libraries.
-        /opt/google-fluentd/embedded/include \
-        /opt/google-fluentd/embedded/lib/*.a \
-    # Log files.
-    && find /var/log -name "*.log" -type f -delete \
-    # Remove .c .cc .h files.
-    && (find /opt/google-fluentd/embedded/ -name '*.c' -o -name '*.cc' -o -name '*.h'  | xargs rm) \
-    # Remove unused api client libraries.
-    && (find /opt/google-fluentd/embedded/lib/ruby/gems/*/gems/google-api-client-*/generated/google/apis -mindepth 1 -maxdepth 1 \! -name 'logging*' | xargs rm -rf) \
+    #&& apt-get purge -y \
+    #    curl \
+    #    lsb-release \
+    #    build-essential \
+    #    gtk2.0 \
+    #    libkrb5-3 \
+    #&& apt-get autoremove -y --purge \
+    ## Remove docs.
+    #&& rm -rf \
+    #    /usr/share/doc \
+    #    /usr/share/man \
+    #    /opt/google-fluentd/embedded/lib/ruby/gems/*/doc \
+    #    /opt/google-fluentd/embedded/share/doc \
+    #    /opt/google-fluentd/embedded/share/gtk-doc \
+    #    /opt/google-fluentd/embedded/share/man \
+    #    /opt/google-fluentd/embedded/share/terminfo \
+    ## Remove unused gems.
+    #&& /opt/google-fluentd/embedded/bin/gem uninstall -ax --force \
+    #    # Gems for ingesting logs to Treasure Data Cloud.
+    #    td \
+    #    td-client \
+    #    td-logger \
+    #    fluent-plugin-td \
+    #    fluent-plugin-td-monitoring \
+    #    hirb \
+    #    parallel \
+    #    ohai \
+    #    mixlib-cli \
+    #    mixlib-config \
+    #    mixlib-log \
+    #    mixlib-shellout \
+    #    systemu \
+    #    # Gems for Mongo.
+    #    fluent-plugin-mongo \
+    #    mongo \
+    ## Remove unused gem versions.
+    #&& /opt/google-fluentd/embedded/bin/gem uninstall httpclient -v 2.7.2 \
+    #&& rm -rf \
+    #    # Cache.
+    #    /var/cache \
+    #    # apt.
+    #    /usr/bin/apt-* \
+    #    /var/lib/apt/lists/* \
+    #    # dpkg.
+    #    /usr/bin/dpkg* \
+    #    /var/lib/dpkg \
+    #    # Temp files.
+    #    /tmp/* \
+    #    # LDAP.
+    #    /usr/lib/x86_64-linux-gnu/libldap* \
+    #    # IBM mainframe / EBCDIC specific encodings.
+    #    /usr/lib/x86_64-linux-gnu/gconv/IBM* \
+    #    /usr/lib/x86_64-linux-gnu/gconv/EBCDIC* \
+    #    # ecpg.
+    #    /opt/google-fluentd/embedded/bin/ecpg \
+    #    # OpenSSL.
+    #    /opt/google-fluentd/embedded/bin/openssl \
+    #    /usr/bin/openssl \
+    #    # Postgres.
+    #    /opt/google-fluentd/embedded/bin/pg_* \
+    #    /opt/google-fluentd/embedded/bin/postgre* \
+    #    /opt/google-fluentd/embedded/share/postgre* \
+    #    /opt/google-fluentd/embedded/lib/postgre* \
+    #    /opt/google-fluentd/embedded/bin/psql \
+    #    # libtool.
+    #    /opt/google-fluentd/embedded/share/libtool \
+    #    /opt/google-fluentd/embedded/bin/libtool \
+    #    # .a files and include libraries.
+    #    /opt/google-fluentd/embedded/include \
+    #    /opt/google-fluentd/embedded/lib/*.a \
+    ## Log files.
+    #&& find /var/log -name "*.log" -type f -delete \
+    ## Remove .c .cc .h files.
+    #&& (find /opt/google-fluentd/embedded/ -name '*.c' -o -name '*.cc' -o -name '*.h'  | xargs rm) \
+    ## Remove unused api client libraries.
+    #&& (find /opt/google-fluentd/embedded/lib/ruby/gems/*/gems/google-api-client-*/generated/google/apis -mindepth 1 -maxdepth 1 \! -name 'logging*' | xargs rm -rf) \
     && sed -i "s/num_threads 8/num_threads 8\n  detect_json true\n  # Enable metadata agent lookups.\n  enable_metadata_agent true\n  metadata_agent_url \"http:\/\/local-metadata-agent.stackdriver.com:8000\"/" "/etc/google-fluentd/google-fluentd.conf"
 
 ENV LD_PRELOAD=/opt/google-fluentd/embedded/lib/libjemalloc.so
