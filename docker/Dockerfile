@@ -36,7 +36,9 @@ RUN apt-get update \
         stackdriver-core \
         fluentd \
         fluent-plugin-google-cloud \
+        json \
     && /opt/google-fluentd/embedded/bin/gem install --no-ri --no-rdoc \
+        json:1.8.6 \
         aws-sdk-resources:2.11.105 \
         aws-sdk-core:2.11.105 \
         aws-sdk:2.11.105 \
@@ -55,7 +57,8 @@ RUN apt-get update \
         parallel:1.12.1 \
         rubyzip:1.2.1 \
         fluentd \
-        fluent-plugin-google-cloud:0.7.0.pre.3 \
+    && /opt/google-fluentd/embedded/bin/gem install --no-ri --no-rdoc \
+        fluent-plugin-google-cloud-0.7.0.pre.json.1.8.gem \
     # Clean up to reduce image size.
     #&& apt-get purge -y \
     #    curl \
