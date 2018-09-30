@@ -32,7 +32,7 @@ RUN apt-get update \
         stackdriver-core \
     && /opt/google-fluentd/embedded/bin/gem install \
         fluentd \
-        fluent-plugin-google-cloud:0.7.0.pre.1 \
+        fluent-plugin-google-cloud:0.7.0.pre.3 \
         cool.io:1.4.4 \
         google-api-client:0.23.4 \
         google-cloud-core:1.2.2 \
