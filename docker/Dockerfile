@@ -1,5 +1,6 @@
 FROM debian:9.5-slim
 
+COPY entrypoint.sh Dockerfile VERSION *.gem /
 # TODO: This may be a moving target, figure out how to pin.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -58,7 +59,7 @@ RUN apt-get update \
         rubyzip:1.2.1 \
         fluentd \
     && /opt/google-fluentd/embedded/bin/gem install --no-ri --no-rdoc \
-        fluent-plugin-google-cloud-0.7.0.pre.json.1.8.gem \
+        /fluent-plugin-google-cloud-0.7.0.pre.json.1.8.gem \
     # Clean up to reduce image size.
     #&& apt-get purge -y \
     #    curl \
@@ -140,7 +141,6 @@ RUN apt-get update \
 
 ENV LD_PRELOAD=/opt/google-fluentd/embedded/lib/libjemalloc.so
 
-COPY entrypoint.sh Dockerfile VERSION /
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/usr/sbin/google-fluentd"]
