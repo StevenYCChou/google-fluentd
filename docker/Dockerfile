@@ -12,7 +12,7 @@ RUN apt-get update \
         ca-certificates \
         adduser \
     # Install google-fluentd at version 1.5.36-1.
-    && curl -sS https://dl.google.com/cloudagents/install-logging-agent.sh | REPO_SUFFIX=20180915-1 DO_NOT_INSTALL_CATCH_ALL_CONFIG=true bash \
+    && curl -sS https://dl.google.com/cloudagents/install-logging-agent.sh | REPO_SUFFIX=20180810-1 DO_NOT_INSTALL_CATCH_ALL_CONFIG=true bash \
     # If any additional gems need to be installed, it should happen before the
     # image cleanup.
     # ==> INSTALL_ADDITIONAL_GEMS_HERE_IF_NEEDED <==
@@ -57,7 +57,7 @@ RUN apt-get update \
         parallel:1.12.1 \
         rubyzip:1.2.1 \
         fluentd \
-        fluent-plugin-google-cloud:0.7.0.pre.4 \
+        fluent-plugin-google-cloud:0.7.0.pre.1 \
     && sed -i "s/num_threads 8/num_threads 8\n  detect_json true\n  # Enable metadata agent lookups.\n  enable_metadata_agent true\n  metadata_agent_url \"http:\/\/local-metadata-agent.stackdriver.com:8000\"/" "/etc/google-fluentd/google-fluentd.conf"
 
 ENV LD_PRELOAD=/opt/google-fluentd/embedded/lib/libjemalloc.so
