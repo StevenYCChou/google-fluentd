@@ -38,9 +38,11 @@ gem_pr_url = "https://api.github.com/repos/GoogleCloudPlatform/{}/pulls/{}"
 gem_compare_url = "https://api.github.com/repos/GoogleCloudPlatform/{}/compare/{}...v{}"
 download_regex_pattern = "download \"{}\", \"(.*)\""
 
+plugin_gems_rb = requests.get(raw_plugin_gems_url.format(google_fluentd_version), stream=True)
+
 pattern = re.compile(download_regex_pattern.format(gem_name))
-gems = requests.get(raw_plugin_gems_url.format(google_fluentd_version), stream=True)
-for l in gems.iter_lines():
+
+for l in plugin_gems_rb.iter_lines():
   m = pattern.match(l)
   if m:
     gem_version = m.group(1)
