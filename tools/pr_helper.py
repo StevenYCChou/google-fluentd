@@ -9,49 +9,74 @@ import argparse
 import re
 import requests
 
-argp = argparse.ArgumentParser(description='Check whether a gem is included in a version of google_fluentd.')
+argp = argparse.ArgumentParser(description='Check whether a version of code includes a PR.')
 argp.add_argument(
-    '--google_fluentd_version',
+    '--release_repo',
     required=True,
-    help='the tag of google_fluentd_version.')
+    help='the repo name includes your main code.')
 argp.add_argument(
-    '--gem_name',
+    '--release_version',
     required=True,
-    help='the name of the gem.')
+    help='A git tag version for the repo you want to examine.')
 argp.add_argument(
-    '--gem_repo_pull_number',
+    '--pr_repo',
+    required=False,
+    help='the repo name of the PR. Default value is the same as release_repo.')
+argp.add_argument(
+    '--pr_number',
     required=True,
     help='the pull request number for the github repo of the gem.')
 
 args = argp.parse_args()
 
-google_fluentd_version = args.google_fluentd_version
-gem_name = args.gem_name
-gem_repo_pr = args.gem_repo_pull_number
+release_repo = args.release_repo
+release_version = args.release_version
 
-print("google_fluentd_version: {}".format(google_fluentd_version))
-print("gem_name: {}".format(gem_name))
-print("gem_repo_pr: {}".format(gem_repo_pr))
+pr_repo = release_repo
+if args.pr_repo is not None:
+  pr_repo = args.pr_repo
 
-raw_plugin_gems_url = "https://raw.githubusercontent.com/GoogleCloudPlatform/google-fluentd/{}/plugin_gems.rb"
-gem_pr_url = "https://api.github.com/repos/GoogleCloudPlatform/{}/pulls/{}"
-gem_compare_url = "https://api.github.com/repos/GoogleCloudPlatform/{}/compare/{}...v{}"
+pr_number = args.pr_number
+
+print("Input:")
+print("  release repo: {}, version: {}".format(release_repo, release_version))
+print("  PR repo: {}".format(pr_repo))
+print("  PR #: {}".format(pr_number))
+
+
+
+raw_plugin_gems_url = "https://raw.githubusercontent.com/GoogleCloudPlatform/{}/{}/plugin_gems.rb"
+pr_url = "https://api.github.com/repos/GoogleCloudPlatform/{}/pulls/{}"
+compare_url = "https://api.github.com/repos/GoogleCloudPlatform/{}/compare/{}...{}"
 download_regex_pattern = "download \"{}\", \"(.*)\""
 
-plugin_gems_rb = requests.get(raw_plugin_gems_url.format(google_fluentd_version), stream=True)
+if release_repo == pr_repo:
+  commit_sha = requests.get(pr_url.format(pr_repo, pr_number)).json()['merge_commit_sha']
+  print("commit_sha for repo {} PR#{}: {}".format(pr_repo, pr_number, commit_sha))
+  compare_status = requests.get(compare_url.format(pr_repo, commit_sha, release_version)).json()['status']
 
-pattern = re.compile(download_regex_pattern.format(gem_name))
+  if compare_status == 'identical' or compare_status == 'ahead':
+    print("this package includes your PR!")
+  else:
+    print("this package does not have your PR!")
+  exit(0)
+
+plugin_gems_rb = requests.get(raw_plugin_gems_url.format(release_repo, release_version), stream=True)
+
+pattern = re.compile(download_regex_pattern.format(pr_repo))
 
 for l in plugin_gems_rb.iter_lines():
   m = pattern.match(l)
   if m:
     gem_version = m.group(1)
-    print("gem version for google_fluentd {}: {}".format(google_fluentd_version, gem_version))
+    print("{} version {} contains upstream {}'s version {}".format(release_repo, release_version, pr_repo, gem_version))
 
-commit_sha = requests.get(gem_pr_url.format(gem_name, gem_repo_pr)).json()['merge_commit_sha']
-print("commit_sha for repo {} PR#{}: {}".format(gem_name, gem_repo_pr, commit_sha))
+upstream_version = "v{}".format(gem_version)
 
-compare_status = requests.get(gem_compare_url.format(gem_name, commit_sha, gem_version)).json()['status']
+commit_sha = requests.get(pr_url.format(pr_repo, pr_number)).json()['merge_commit_sha']
+print("commit_sha for repo {} PR#{}: {}".format(pr_repo, pr_number, commit_sha))
+
+compare_status = requests.get(compare_url.format(pr_repo, commit_sha, upstream_version)).json()['status']
 
 if compare_status == 'identical' or compare_status == 'ahead':
   print("this package includes your PR!")
