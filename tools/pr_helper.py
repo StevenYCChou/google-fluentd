@@ -11,9 +11,14 @@ import requests
 
 argp = argparse.ArgumentParser(description='Check whether a version of code includes a PR.')
 argp.add_argument(
+    '--org',
+    required=False,
+    default='GoogleCloudPlatform',
+    help='The org of the repositories. Default is GoogleCloudPlatform.')
+argp.add_argument(
     '--release_repo',
     required=True,
-    help='the repo name includes your main code.')
+    help='The repo name includes your main code.')
 argp.add_argument(
     '--release_version',
     required=True,
@@ -21,14 +26,15 @@ argp.add_argument(
 argp.add_argument(
     '--pr_repo',
     required=False,
-    help='the repo name of the PR. Default value is the same as release_repo.')
+    help='The repo name of the PR. Default value is the same as release_repo.')
 argp.add_argument(
     '--pr_number',
     required=True,
-    help='the pull request number for the github repo of the gem.')
+    help='The number of the Github pull request.')
 
 args = argp.parse_args()
 
+org = args.org
 release_repo = args.release_repo
 release_version = args.release_version
 
@@ -39,15 +45,15 @@ if args.pr_repo is not None:
 pr_number = args.pr_number
 
 print("Input:")
-print("  release repo: {}, version: {}".format(release_repo, release_version))
-print("  PR repo: {}".format(pr_repo))
-print("  PR #: {}".format(pr_number))
+print("  release:")
+print("    org: {}, repo: {}, version: {}".format(org, release_repo, release_version))
+print("  PR:")
+print("    repo: {}".format(pr_repo))
+print("    #: {}".format(pr_number))
 
-
-
-raw_plugin_gems_url = "https://raw.githubusercontent.com/GoogleCloudPlatform/{}/{}/plugin_gems.rb"
-pr_url = "https://api.github.com/repos/GoogleCloudPlatform/{}/pulls/{}"
-compare_url = "https://api.github.com/repos/GoogleCloudPlatform/{}/compare/{}...{}"
+raw_plugin_gems_url = "https://raw.githubusercontent.com/" + org + "/{}/{}/plugin_gems.rb"
+pr_url = "https://api.github.com/repos/" + org + "/{}/pulls/{}"
+compare_url = "https://api.github.com/repos/" + org + "/{}/compare/{}...{}"
 download_regex_pattern = "download \"{}\", \"(.*)\""
 
 if release_repo == pr_repo:
