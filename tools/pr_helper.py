@@ -59,14 +59,7 @@ def is_pr_included_in_version(repo_name, pr_number, git_tag_version):
   else:
     return False
 
-print("Input:")
-print("  release:")
-print("    org: {}, repo: {}, version: {}".format(org, release_repo, release_version))
-print("  PR:")
-print("    repo: {}".format(pr_repo))
-print("    #: {}".format(pr_number))
-
-if release_repo != pr_repo:
+def get_gem_version(repo_name, git_tag_version):
   plugin_gems_rb = requests.get(raw_plugin_gems_url.format(release_repo, release_version), stream=True)
   pattern = re.compile(download_regex_pattern.format(pr_repo))
 
@@ -75,7 +68,17 @@ if release_repo != pr_repo:
     if m:
       gem_version = m.group(1)
       print("{} version {} contains upstream {}'s version {}".format(release_repo, release_version, pr_repo, gem_version))
-  target_version = "v{}".format(gem_version)
+  return "v{}".format(gem_version)
+
+print("Input:")
+print("  release:")
+print("    org: {}, repo: {}, version: {}".format(org, release_repo, release_version))
+print("  PR:")
+print("    repo: {}".format(pr_repo))
+print("    #: {}".format(pr_number))
+
+if release_repo != pr_repo:
+  target_version = get_gem_version(release_repo, release_version)
 else:
   target_version = release_version
 
