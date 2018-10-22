@@ -51,9 +51,7 @@ download_regex_pattern = "download \"{}\", \"(.*)\""
 
 def is_pr_included_in_version(repo_name, pr_number, git_tag_version):
   commit_sha = requests.get(pr_url.format(repo_name, pr_number)).json()['merge_commit_sha']
-  print("commit_sha for repo {} PR#{}: {}".format(repo_name, pr_number, commit_sha))
   compare_status = requests.get(compare_url.format(repo_name, commit_sha, git_tag_version)).json()['status']
-
   if compare_status == 'identical' or compare_status == 'ahead':
     return True
   else:
@@ -82,8 +80,8 @@ if release_repo != pr_repo:
 else:
   target_version = release_version
 
-if is_pr_included_in_version(pr_repo, pr_number, target_version):
-  print("this package includes your PR!")
-else:
-  print("this package does not have your PR!")
+print("{} {} includes your pr#{}: {}".format(release_repo, \
+                                             release_version, \
+                                             pr_number, \
+                                             is_pr_included_in_version(pr_repo, pr_number, target_version)))
 
