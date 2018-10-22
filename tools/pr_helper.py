@@ -44,17 +44,27 @@ if args.pr_repo is not None:
 
 pr_number = args.pr_number
 
+raw_plugin_gems_url = "https://raw.githubusercontent.com/" + org + "/{}/{}/plugin_gems.rb"
+pr_url = "https://api.github.com/repos/" + org + "/{}/pulls/{}"
+compare_url = "https://api.github.com/repos/" + org + "/{}/compare/{}...{}"
+download_regex_pattern = "download \"{}\", \"(.*)\""
+
+def is_pr_included_in_version(repo_name, pr_number, git_tag_version):
+  commit_sha = requests.get(pr_url.format(repo_name, pr_number)).json()['merge_commit_sha']
+  print("commit_sha for repo {} PR#{}: {}".format(repo_name, pr_number, commit_sha))
+  compare_status = requests.get(compare_url.format(repo_name, commit_sha, git_tag_version)).json()['status']
+
+  if compare_status == 'identical' or compare_status == 'ahead':
+    return True
+  else:
+    return False
+
 print("Input:")
 print("  release:")
 print("    org: {}, repo: {}, version: {}".format(org, release_repo, release_version))
 print("  PR:")
 print("    repo: {}".format(pr_repo))
 print("    #: {}".format(pr_number))
-
-raw_plugin_gems_url = "https://raw.githubusercontent.com/" + org + "/{}/{}/plugin_gems.rb"
-pr_url = "https://api.github.com/repos/" + org + "/{}/pulls/{}"
-compare_url = "https://api.github.com/repos/" + org + "/{}/compare/{}...{}"
-download_regex_pattern = "download \"{}\", \"(.*)\""
 
 if release_repo != pr_repo:
   plugin_gems_rb = requests.get(raw_plugin_gems_url.format(release_repo, release_version), stream=True)
@@ -69,11 +79,7 @@ if release_repo != pr_repo:
 else:
   target_version = release_version
 
-commit_sha = requests.get(pr_url.format(pr_repo, pr_number)).json()['merge_commit_sha']
-print("commit_sha for repo {} PR#{}: {}".format(pr_repo, pr_number, commit_sha))
-compare_status = requests.get(compare_url.format(pr_repo, commit_sha, target_version)).json()['status']
-
-if compare_status == 'identical' or compare_status == 'ahead':
+if is_pr_included_in_version(pr_repo, pr_number, target_version):
   print("this package includes your PR!")
 else:
   print("this package does not have your PR!")
